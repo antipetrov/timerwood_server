@@ -8,15 +8,10 @@ class User(db.Model):
     login = db.Column(db.String(64), index=True, unique=True)
     code = db.Column(db.String(64), index=True, unique=True)
 
-class TodoList(db.Model):
+class Timer(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    add_time = db.Column(db.DateTime(), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    name = db.Column(db.String(255))
-
-class TodoItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'))
-    edit_time = db.Column(db.DateTime, index=True)
-    ord = db.Column(db.Integer, index=True)
-    value = db.Column(db.Text)
+    create_time = db.Column(db.DateTime(), index=True)
+    edit_time = db.Column(db.DateTime(), index=True)
+    master_code = db.Column(db.String(64), index=True)
+    guest_code =  db.Column(db.String(64), index=True)
+    timer_data = db.Column(db.Text)
