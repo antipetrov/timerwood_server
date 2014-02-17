@@ -19,7 +19,7 @@ def add_list():
 
     reply = {}
 
-    code = request.form.get('code',0)
+    code = request.form.get('code', 0)
     data = request.form['data']
     try:
         parsed_data = JSONDecoder.decode(data)
@@ -32,13 +32,15 @@ def add_list():
         timer_found = Timer.query.get(Timer.master_code==code)
         timer_found.timer_data = data
         timer_found.edit_time = datetime.now()
-        timer_found.save()
+        db.session.add(timer_found)
+    else:
+        # create new timer
+        new_timer = Timer()
+        new_timer.create_time = datetime.now()
+        new_timer.timer_data = data
+        new_timer.master_code = uuid.uuid1()
+        db.session.add(new_timer)
 
-    new_timer = Timer()
-    new_timer.create_time = datetime.now()
-    new_timer.timer_data = data
-    new_timer.master_code = uuid.uuid1()
 
-    db.session.add(new_timer)
 
     return jsonify(reply)
