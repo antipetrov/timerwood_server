@@ -1,3 +1,3 @@
 
-from twoodapp import app
-app.run()
+import twoodapp
+twoodapp.app.run()
