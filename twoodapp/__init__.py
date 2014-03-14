@@ -66,12 +66,12 @@ class TaskListApi(MethodView):
 
 
         # create codes
-        alphabet = string.ascii_letters + string.digits + "*%&$"
+        alphabet = string.ascii_letters + string.digits + "%&$"
 
         if not timer_code:
             timer_code = ''.join(random.choice(alphabet) for x in range(8))
 
-        guest_code = ''.join(random.choice(alphabet) for x in range(10))
+        guest_code = ''.join(random.choice(alphabet) for x in range(9))
 
         # add master code
         newTimerCode = models.TimerCode()
@@ -101,11 +101,33 @@ class TaskListApi(MethodView):
 
     # remove
     def delete(self, timer_code):
-        return 'tasklist delete %s\n' % timer_code
+        # check timer code
+        found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
+
+        if not found_code:
+            return jsonify({'status': False, 'error': "Timer not found"})
+
+        if not found_code.code_type == 'master':
+            return jsonify({'status': False, 'error': "Operation not permitted"})
+        else:
+
+            timer = found_code.timer
+
+            models.TimerCode.query.filter(models.TimerCode.timer == timer).delete()
+            db.session.delete(timer)
+            db.session.commit()
+
+            try:
+                db.session.commit()
+            except Exception:
+                return jsonify({'status': False, 'error': "Unknown storage error. Operation failed."})
+
+            return jsonify({'status': True, 'message': "Timer %s deleted" % timer_code})
+
+
 
 
 timer_api_view = TaskListApi.as_view('admin_api')
 
-app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['GET', ])
-app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['POST', ])
-app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['PUT', ])
+app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['GET', 'POST', 'PUT', 'DELETE'])
+app.add_url_rule('/timer/', view_func=timer_api_view, methods=['POST', ], defaults={'timer_code': None})
