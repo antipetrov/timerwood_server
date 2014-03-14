@@ -97,7 +97,29 @@ class TaskListApi(MethodView):
 
     #update
     def put(self, timer_code):
-        return 'tasklist put %s\n' % timer_code
+        # check timer code
+        found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
+
+        if not found_code:
+            return jsonify({'status': False, 'error': "Timer not found"})
+
+        if not found_code.code_type == 'master':
+            return jsonify({'status': False, 'error': "Operation not permitted"})
+        else:
+
+            new_data = request.form['data']
+
+            timer = found_code.timer
+
+            timer.edit_time = datetime.datetime.now()
+            timer.timer_data = new_data
+
+            try:
+                db.session.commit()
+            except Exception:
+                return jsonify({'status': False, 'error': "Unknown storage error. Operation failed."})
+
+            return jsonify({'status': True, 'message': "Timer %s updated" % timer_code})
 
     # remove
     def delete(self, timer_code):
@@ -115,7 +137,6 @@ class TaskListApi(MethodView):
 
             models.TimerCode.query.filter(models.TimerCode.timer == timer).delete()
             db.session.delete(timer)
-            db.session.commit()
 
             try:
                 db.session.commit()
