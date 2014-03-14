@@ -21,7 +21,7 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
-from models import *
+import models
 
 
 # api entry points
@@ -34,37 +34,66 @@ import datetime
 class TaskListApi(MethodView):
     #get list
     def get(self, timer_code):
-        return 'tasklist get %s\n' % timer_code
+
+        found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
+
+        if not found_code:
+            result = {'status': False, 'error': 'Timer %s not found' % timer_code}
+        else:
+            result = {'status': True, 'mode': found_code.code_type, 'data': found_code.timer.timer_data}
+
+        return jsonify(result)
 
     # create
     def post(self, timer_code):
         import short_url, random, string
 
+        # check timer code
+        found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
+
+        if found_code:
+            return jsonify({'status': False, 'error': 'Timer %s already exists' % found_code.code})
+
+        #save timer data
+        timer_data = request.form['data']
+
+        newTimer = models.Timer()
+        newTimer.create_time = datetime.datetime.now()
+        newTimer.edit_time = datetime.datetime.now()
+        newTimer.timer_data = timer_data
+        db.session.add(newTimer)
+        db.session.flush()
+
+
+        # create codes
         alphabet = string.ascii_letters + string.digits + "*%&$"
 
         if not timer_code:
             timer_code = ''.join(random.choice(alphabet) for x in range(8))
 
         guest_code = ''.join(random.choice(alphabet) for x in range(10))
-        timer_data = request.form['data']
 
-        newTimer = models.Timer()
-        newTimer.create_time = datetime.datetime.now()
-        newTimer.edit_time = datetime.datetime.now()
-        newTimer.master_code = timer_code
-        newTimer.guest_code = guest_code
-        newTimer.timer_data = timer_data
+        # add master code
+        newTimerCode = models.TimerCode()
+        newTimerCode.timer_id = newTimer.id
+        newTimerCode.code_type = 'master'
+        newTimerCode.code = timer_code
+        db.session.add(newTimerCode)
 
-        db.session.add(newTimer)
+        # add master code
+        newGuestCode = models.TimerCode()
+        newGuestCode.timer_id = newTimer.id
+        newGuestCode.code_type = 'guest'
+        newGuestCode.code = guest_code
+        db.session.add(newGuestCode)
+
         db.session.commit()
 
-        result = {
+        return jsonify({
             'status': True,
-            'master_code': newTimer.master_code,
-            'guest_code': newTimer.guest_code,
-        }
-
-        return json.dumps(result)
+            'master_code': timer_code,
+            'guest_code': guest_code,
+        })
 
     #update
     def put(self, timer_code):
@@ -78,5 +107,5 @@ class TaskListApi(MethodView):
 timer_api_view = TaskListApi.as_view('admin_api')
 
 app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['GET', ])
-app.add_url_rule('/timer/', view_func=timer_api_view, methods=['POST', ], defaults={'timer_code': None})
+app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['POST', ])
 app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['PUT', ])

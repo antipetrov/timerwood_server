@@ -17,5 +17,6 @@ class Timer(db.Model):
 class TimerCode(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(32), unique=True, nullable=False)
-    code_type = db.Column(db.Enum('master','guest'),nullable=False, default='guest')
+    code_type = db.Column(db.Enum('master', 'guest'), nullable=False, default='guest')
     timer_id = db.Column(db.Integer, db.ForeignKey('timer.id'), nullable=False)
+    timer = db.relationship('Timer')
