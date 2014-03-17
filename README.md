@@ -1,13 +1,12 @@
 timerwood_server
 ================
 
-timerwood todo-list pretty-dumb-storage
-
-
 Сервер для сохранения данных из timerwood-client
 
+Сервер понимает REST, то есть запросы надо отправлять по HTTP методами GET,POST,PUT,DELETE
+Ответы-всегда в JSON
 
-API
+# Методы API
 1. Создание нового таймера
 Запрос
 URL: /timer/{timer_code}
@@ -15,7 +14,11 @@ URL: /timer/{timer_code}
 метод: POST
 
 данные POST:
-data - текстовые данные таймера (например JSON)
+data - текстовые данные таймера (например JSON), серверу все равно что это будет за текст он его только сохраняет
+
+Ответ: 
+status: true/false (создан/не создан)
+master_code: код для последующего редактирования/удаления. Если в запросе был timer_code, то master_code==timer_code
 
 Пример: curl http://82.196.2.175:8062/timer/ -d data="{task83=1}"
 ответ: 
@@ -26,6 +29,7 @@ data - текстовые данные таймера (например JSON)
   "status": true
 }
 ...
+
 
 2. Чтение таймера
 3. Удаление таймера
