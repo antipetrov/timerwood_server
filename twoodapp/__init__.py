@@ -153,7 +153,7 @@ class TaskListApi(MethodView):
 
 
 
-timer_api_view = TaskListApi.as_view('admin_api')
+timer_api_view = TaskListApi.as_view('timer_api')
 
 app.add_url_rule('/timer/', view_func=timer_api_view, methods=['POST', ], defaults={'timer_code': None})
 app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['GET', 'POST', 'PUT', 'DELETE'])
