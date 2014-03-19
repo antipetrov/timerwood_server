@@ -26,28 +26,15 @@ import models
 
 
 # api entry points
-from flask.views import View, MethodView
-from flask import request,jsonify
-import json
+from flask.views import MethodView
+from flask import request
 import datetime
-from flask.ext.jsonpify import jsonify, jsonpify
-
-
-
-def jsonp_wrap(obj,funcname):
-
-    result = json.dump(obj,ensure_ascii=False)
-
-    if funcname:
-        result = "%s(%s)" % (funcname, obj)
-
-    return result
+from flask.ext.jsonpify import jsonify
 
 
 class TaskListApi(MethodView):
     #get list
     def get(self, timer_code):
-
 
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
 
@@ -96,7 +83,7 @@ class TaskListApi(MethodView):
         newTimerCode.code = timer_code
         db.session.add(newTimerCode)
 
-        # add master code
+        # add guest code
         newGuestCode = models.TimerCode()
         newGuestCode.timer_id = newTimer.id
         newGuestCode.code_type = 'guest'
@@ -104,9 +91,6 @@ class TaskListApi(MethodView):
         db.session.add(newGuestCode)
 
         db.session.commit()
-
-
-
 
         return jsonify({
             'status': True,
@@ -143,8 +127,6 @@ class TaskListApi(MethodView):
 
     # remove
     def delete(self, timer_code):
-
-        jsonp = request.form.get('jsonp', request.args.get('jsonp', None))
 
         # check timer code
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
