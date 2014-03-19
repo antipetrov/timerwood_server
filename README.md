@@ -90,3 +90,13 @@ URL: /timer/{timer_code}/
   "status": true  
 }`
 
+
+## JSONP  
+В любой запрос можно добавить параметр (GET или POST) **callback** - тогда результат запроса будет обернут в значение callback.  
+Пример: curl http://82.196.2.175:8062/timer/1144/?callback=someFunc
+
+ответ:   
+`someFunc({  
+  "message": "Timer 113 deleted",   
+  "status": true  
+})`
