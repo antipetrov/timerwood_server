@@ -86,8 +86,8 @@ URL: /timer/{timer_code}/
 Пример: curl -X "DELETE" http://82.196.2.175:8062/timer/100500/    
 ответ:   
 `{  
-  "message": "Timer 113 deleted",   
-  "status": true  
+  "message": "Timer 1144 not found",   
+  "status": false  
 }`
 
 
