@@ -30,12 +30,13 @@ from flask.views import View, MethodView
 from flask import request,jsonify
 import json
 import datetime
+from flask.ext.jsonpify import jsonify, jsonpify
 
 
 
 def jsonp_wrap(obj,funcname):
 
-    result = json.dumps(obj)
+    result = json.dump(obj,ensure_ascii=False)
 
     if funcname:
         result = "%s(%s)" % (funcname, obj)
@@ -55,8 +56,7 @@ class TaskListApi(MethodView):
         else:
             result = {'status': True, 'mode': found_code.code_type, 'data': found_code.timer.timer_data}
 
-        jsonp = request.form.get('jsonp', request.args.get('jsonp', None))
-        return jsonp_wrap(result,jsonp)
+        return jsonify(result)
 
     # create
     def post(self, timer_code):
@@ -68,7 +68,7 @@ class TaskListApi(MethodView):
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
 
         if found_code:
-            return jsonp_wrap({'status': False, 'error': 'Timer %s already exists' % found_code.code},jsonp)
+            return jsonify({'status': False, 'error': 'Timer %s already exists' % found_code.code})
 
         #save timer data
         timer_data = request.form['data']
@@ -108,25 +108,23 @@ class TaskListApi(MethodView):
 
 
 
-        return jsonp_wrap({
+        return jsonify({
             'status': True,
             'master_code': timer_code,
             'guest_code': guest_code,
-        },jsonp)
+        })
 
     #update
     def put(self, timer_code):
-
-        jsonp = request.form.get('jsonp', request.args.get('jsonp', None))
 
         # check timer code
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
 
         if not found_code:
-            return jsonp_wrap({'status': False, 'error': "Timer not found"}, jsonp)
+            return jsonify({'status': False, 'error': "Timer not found"})
 
         if not found_code.code_type == 'master':
-            return jsonp_wrap({'status': False, 'error': "Operation not permitted"}, jsonp)
+            return jsonify({'status': False, 'error': "Operation not permitted"})
         else:
 
             new_data = request.form['data']
@@ -139,9 +137,9 @@ class TaskListApi(MethodView):
             try:
                 db.session.commit()
             except Exception:
-                return jsonp_wrap({'status': False, 'error': "Unknown storage error. Operation failed."}, jsonp)
+                return jsonify({'status': False, 'error': "Unknown storage error. Operation failed."})
 
-            return jsonp_wrap({'status': True, 'message': "Timer %s updated" % timer_code}, jsonp)
+            return jsonify({'status': True, 'message': "Timer %s updated" % timer_code})
 
     # remove
     def delete(self, timer_code):
@@ -152,10 +150,10 @@ class TaskListApi(MethodView):
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
 
         if not found_code:
-            return jsonp_wrap({'status': False, 'error': "Timer not found"}, jsonp)
+            return jsonify({'status': False, 'error': "Timer not found"})
 
         if not found_code.code_type == 'master':
-            return jsonp_wrap({'status': False, 'error': "Operation not permitted"}, jsonp)
+            return jsonify({'status': False, 'error': "Operation not permitted"})
         else:
 
             timer = found_code.timer
@@ -166,9 +164,9 @@ class TaskListApi(MethodView):
             try:
                 db.session.commit()
             except Exception:
-                return jsonp_wrap({'status': False, 'error': "Unknown storage error. Operation failed."}, jsonp)
+                return jsonify({'status': False, 'error': "Unknown storage error. Operation failed."})
 
-            return jsonp_wrap({'status': True, 'message': "Timer %s deleted" % timer_code}, jsonp)
+            return jsonify({'status': True, 'message': "Timer %s deleted" % timer_code})
 
 
 
