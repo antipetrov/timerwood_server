@@ -29,11 +29,13 @@ import models
 from flask.views import MethodView
 from flask import request
 import datetime
+from flask_cors import cross_origin
 from flask.ext.jsonpify import jsonify
 
 
 class TaskListApi(MethodView):
     #get list
+    @cross_origin()
     def get(self, timer_code):
 
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
@@ -46,6 +48,7 @@ class TaskListApi(MethodView):
         return jsonify(result)
 
     # create
+    @cross_origin()
     def post(self, timer_code):
         import short_url, random, string
         jsonp = request.form.get('jsonp', request.args.get('jsonp', None))
@@ -99,6 +102,7 @@ class TaskListApi(MethodView):
         })
 
     #update
+    @cross_origin()
     def put(self, timer_code):
 
         # check timer code
@@ -126,6 +130,7 @@ class TaskListApi(MethodView):
             return jsonify({'status': True, 'message': "Timer %s updated" % timer_code})
 
     # remove
+    @cross_origin()
     def delete(self, timer_code):
 
         # check timer code
