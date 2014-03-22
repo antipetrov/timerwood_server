@@ -1,7 +1,7 @@
 # coding: utf-8
 __author__ = 'petrmatuhov'
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
@@ -35,7 +35,7 @@ from flask.ext.jsonpify import jsonify
 
 class TaskListApi(MethodView):
     #get list
-    @cross_origin()
+    @cross_origin(automatic_options = True)
     def get(self, timer_code):
 
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
@@ -155,12 +155,20 @@ class TaskListApi(MethodView):
 
             return jsonify({'status': True, 'message': "Timer %s deleted" % timer_code})
 
+    @cross_origin()
+    def options (self,timer_code):
+        return jsonify({'status': True})
 
 
+@app.errorhandler(404)
+@cross_origin()
+def error_not_found(e):
+    return jsonify({'status': False, 'error': 'Requested URL not found'})
 
 timer_api_view = TaskListApi.as_view('timer_api')
 
 app.add_url_rule('/timer/', view_func=timer_api_view, methods=['POST', ], defaults={'timer_code': None})
-app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view, methods=['GET', 'POST', 'PUT', 'DELETE'])
+app.add_url_rule('/timer/<string:timer_code>/', view_func=timer_api_view,
+                 methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 
