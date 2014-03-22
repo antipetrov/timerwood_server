@@ -35,7 +35,7 @@ from flask.ext.jsonpify import jsonify
 
 class TaskListApi(MethodView):
     #get list
-    @cross_origin(automatic_options = True)
+    @cross_origin(methods=settings.api_metods, automatic_options = True)
     def get(self, timer_code):
 
         found_code = models.TimerCode.query.filter((models.TimerCode.code == timer_code)).first()
@@ -48,7 +48,7 @@ class TaskListApi(MethodView):
         return jsonify(result)
 
     # create
-    @cross_origin()
+    @cross_origin(methods=settings.api_metods)
     def post(self, timer_code):
         import short_url, random, string
         jsonp = request.form.get('jsonp', request.args.get('jsonp', None))
@@ -102,7 +102,7 @@ class TaskListApi(MethodView):
         })
 
     #update
-    @cross_origin()
+    @cross_origin(methods=settings.api_metods)
     def put(self, timer_code):
 
         # check timer code
@@ -130,7 +130,7 @@ class TaskListApi(MethodView):
             return jsonify({'status': True, 'message': "Timer %s updated" % timer_code})
 
     # remove
-    @cross_origin()
+    @cross_origin(methods=settings.api_metods)
     def delete(self, timer_code):
 
         # check timer code
@@ -155,13 +155,13 @@ class TaskListApi(MethodView):
 
             return jsonify({'status': True, 'message': "Timer %s deleted" % timer_code})
 
-    @cross_origin()
+    @cross_origin(methods=settings.api_metods)
     def options (self,timer_code):
         return jsonify({'status': True})
 
 
 @app.errorhandler(404)
-@cross_origin()
+@cross_origin(methods=settings.api_metods)
 def error_not_found(e):
     return jsonify({'status': False, 'error': 'Requested URL not found'})
 
