@@ -43,7 +43,14 @@ class TaskListApi(MethodView):
         if not found_code:
             result = {'status': False, 'error': 'Timer %s not found' % timer_code}
         else:
-            result = {'status': True, 'mode': found_code.code_type, 'data': found_code.timer.timer_data}
+            if found_code.code_type == 'master':
+                # find guest code
+                found_guest = models.TimerCode.query.filter((models.TimerCode.timer_id == found_code.timer.id) &
+                                                            (models.TimerCode.code_type == 'guest')).first()
+                result = {'status': True, 'mode': found_code.code_type, 'guest_code': found_guest.code,
+                          'data': found_code.timer.timer_data}
+            else:
+                result = {'status': True, 'mode': found_code.code_type, 'data': found_code.timer.timer_data}
 
         return jsonify(result)
 
